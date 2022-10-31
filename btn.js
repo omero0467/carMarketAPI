@@ -196,7 +196,7 @@ function ListHandler(event) {
     const idsArr = [getId(set.dataAll.agencies) ,getId(set.dataAll.customers)].flat()
     for (const Id of idsArr) {
         if(Id == targetId){
-            console.log(Id)
+            // console.log(Id)
             overlay.classList.toggle('hidden')
             let parentCustomers = event.target.parentElement.classList.contains('customersList')
             let parentAgencies = event.target.parentElement.classList.contains('agenciesList')
@@ -213,7 +213,7 @@ function ListHandler(event) {
 async function fetchAgencyORcustomer(str) {
  try{   const myArr = [fetchAgencyById(str),fetchCustomerById(str)]
     const response = await Promise.any(myArr)
-    console.dir(response);
+    // console.dir(response);
     return response}catch(e){console.error(e)}
 }
 
@@ -239,7 +239,7 @@ async function createAndAppendAgencyCard(obj) {
     const brandsArr = Object.keys(myobj.cars)
     
     for(let brand of brandsArr) {
-        console.log(getName(myobj.cars[brand]))
+        // console.log(getName(myobj.cars[brand]))
         cars.innerText+= `${brand}  : ${getName(myobj.cars[brand])}, 
         `
     }
@@ -250,7 +250,7 @@ async function createAndAppendAgencyCard(obj) {
 
 async function createAndAppendCustomerCard(obj) { 
     const myobj = await obj
-    console.log(myobj.name)
+    // console.log(myobj.name)
     let name1 = document.createElement('div')
     name1.innerText=myobj.name
     let cash = document.createElement('div')
@@ -270,6 +270,9 @@ async function createAndAppendCustomerCard(obj) {
         price =document.createElement('span')
         year =document.createElement('span')
         cars.setAttribute('data-num',`${car.carNumber}`)
+        cars.setAttribute('data-model',`${car.name}`)
+        year.setAttribute('data-model',`${car.name}`)
+        price.setAttribute('data-model',`${car.name}`)
         carTitle.innerText = `Model : ${car.name} `
         price.innerText = `Price :${car.price}$, `
         year.innerText = `Year :${car.year}`
@@ -279,11 +282,41 @@ async function createAndAppendCustomerCard(obj) {
         card.appendChild(cars)
         setClasses([cars,carTitle,price,year],['cars','carTitle','price','year'])
     }
+    cars.addEventListener('click',displayCarsImage)
+}
+
+async function displayCarsImage(event){
+    console.log(event.target)
+    const myobj =await fetchAgencyById('3J2r3Kglvs')
+    // console.log(myobj)
+    const brandsArr = Object.keys(myobj.cars)
+    let model =event.target.getAttribute('data-model').toLowerCase()
+    // console.log(model)
+    let imagePromisesArr =[]
+    
+    for(let brand of brandsArr) {
+        brand = brand.toLowerCase()
+        model = model.toLowerCase()
+        const imageRes = fetchData(`https://capsules7.herokuapp.com/api/carMarket/img/${brand}/${model}`)
+        imagePromisesArr.push(imageRes)
+    }
+    // console.log(imagePromisesArr)
+
+    const imageResposnes = (await Promise.all(imagePromisesArr))
+    // console.dir(imageResposnes)
+    for(let promise of imageResposnes){
+        // console.dir(promise)
+        if(promise.image){
+        card.style.background=`url(${promise.image}) center center/cover no-repeat`
+        return
+
+    }}
 }
 
 closeBtn.addEventListener('click',()=>{
     overlay.classList.toggle('hidden')
     card.replaceChildren(closeBtn)
+    card.style.background ='#f4f4f4'
 })
 
 function setClasses(arr,arr2) {  
